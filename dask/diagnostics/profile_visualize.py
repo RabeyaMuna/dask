@@ -14,7 +14,7 @@ from dask.utils import import_required
 
 
 def BOKEH_VERSION():
-    bokeh = import_optional_dependency("bokeh")
+    bokeh = import_optional_dependency("bokeh", _BOKEH_MISSING_MSG)
     from packaging.version import Version
 
     return Version(bokeh.__version__)
@@ -47,7 +47,7 @@ def get_colors(palette, funcs):
     funcs : iterable
         Iterable of function names
     """
-    palettes = import_required("bokeh.palettes", _BOKEH_MISSING_MSG)
+    palettes = import_required("bokeh.palettes")
 
     unique_funcs = sorted(unique(funcs))
     n_funcs = len(unique_funcs)
@@ -91,7 +91,7 @@ def visualize(
     -------
     The completed bokeh plot object.
     """
-    bp = import_required("bokeh.plotting", _BOKEH_MISSING_MSG)
+    bp = import_required("bokeh.plotting")
     from bokeh.io import state
 
     if "file_path" in kwargs:
@@ -164,7 +164,7 @@ def plot_tasks(
     -------
     The completed bokeh plot object.
     """
-    bp = import_required("bokeh.plotting", _BOKEH_MISSING_MSG)
+    bp = import_required("bokeh.plotting")
     from bokeh.models import HoverTool
 
     defaults = dict(
@@ -266,7 +266,7 @@ def plot_resources(results, start_time, end_time, palette="Viridis", **kwargs):
     -------
     The completed bokeh plot object.
     """
-    bp = import_required("bokeh.plotting", _BOKEH_MISSING_MSG)
+    bp = import_required("bokeh.plotting")
     from bokeh import palettes
     from bokeh.models import LinearAxis, Range1d
 
