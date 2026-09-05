@@ -44,6 +44,8 @@ fi
 
 # Install dask
 python -m pip install --quiet --no-deps -e .[complete]
+# Install dask-expr to avoid dependency conflict
+python -m pip install --quiet "dask-expr>=2.0.0"
 echo mamba list
 mamba list
 
