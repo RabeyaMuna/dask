@@ -1586,11 +1586,14 @@ def quantile(
     else:
         kwargs = {}
 
+    # interpolation parameter was removed in NumPy 2.0, use method instead
+    if not NUMPY_GE_200:
+        kwargs["interpolation"] = interpolation
+
     result = a.map_blocks(
         np.quantile,
         q=q,
         method=method,
-        interpolation=interpolation,
         axis=axis,
         keepdims=keepdims,
         drop_axis=axis if not keepdims else None,
@@ -1638,14 +1641,15 @@ def _custom_quantile(
     ):
         # bail to nanquantile. Assumptions are pretty strict for now but we
         # do cover the xarray.quantile case.
+        # interpolation parameter was removed in NumPy 2.0, use method instead
+        nanq_kwargs = {"method": method, "keepdims": keepdims, **kwargs}
+        if not NUMPY_GE_200:
+            nanq_kwargs["interpolation"] = interpolation
         return np.nanquantile(
             a,
             q,
             axis=axis,
-            method=method,
-            interpolation=interpolation,
-            keepdims=keepdims,
-            **kwargs,
+            **nanq_kwargs,
         )
     # nanquantile in NumPy is pretty slow if the quantile axis is slow because
     # each quantile has overhead.
