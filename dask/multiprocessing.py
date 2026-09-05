@@ -29,8 +29,44 @@ def _reduce_method_descriptor(m):
 # type(set.union) is used as a proxy to <class 'method_descriptor'>
 copyreg.pickle(type(set.union), _reduce_method_descriptor)
 
-_dumps = partial(cloudpickle.dumps, protocol=pickle.HIGHEST_PROTOCOL)
 _loads = cloudpickle.loads
+
+
+def _serialize_headers(obj):
+    """Serialize HTTP headers to plain dicts for multiprocessing.
+    
+    Converts CIMultiDictProxy objects (from aiohttp headers) to plain dicts
+    to enable pickle serialization via cloudpickle.
+    """
+    try:
+        from multidict._multidict import CIMultiDict, CIMultiDictProxy
+        if isinstance(obj, (CIMultiDictProxy, CIMultiDict)):
+            return dict(obj)
+    except ImportError:
+        pass
+    
+    # Recursively process containers
+    if isinstance(obj, dict):
+        return {k: _serialize_headers(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_serialize_headers(item) for item in obj]
+    elif isinstance(obj, tuple):
+        return tuple(_serialize_headers(item) for item in obj)
+    
+    return obj
+
+
+def _dumps_with_header_serialization(obj, protocol=pickle.HIGHEST_PROTOCOL):
+    """Serialize object with header serialization for multiprocessing.
+    
+    Converts CIMultiDictProxy objects to plain dicts before cloudpickle
+    serialization to enable pickle serialization of HTTP response headers.
+    """
+    serialized_obj = _serialize_headers(obj)
+    return cloudpickle.dumps(serialized_obj, protocol=protocol)
+_dumps = partial(_dumps_with_header_serialization, protocol=pickle.HIGHEST_PROTOCOL)
+
+
 
 
 def _process_get_id():
