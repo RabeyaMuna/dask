@@ -51,6 +51,7 @@ array = ["numpy >= 1.24"]
 # keeping for backwards compatibility
 bag = []
 dataframe = [
+    "dask-expr >= 2.0.0",
     "dask[array]",
     "pandas >= 2.0",
     "pyarrow>=14.0.1",
