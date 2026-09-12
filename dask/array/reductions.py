@@ -1586,11 +1586,11 @@ def quantile(
     else:
         kwargs = {}
 
+    _method = method if interpolation is None else interpolation
     result = a.map_blocks(
         np.quantile,
         q=q,
-        method=method,
-        interpolation=interpolation,
+        method=_method,
         axis=axis,
         keepdims=keepdims,
         drop_axis=axis if not keepdims else None,
@@ -1638,12 +1638,12 @@ def _custom_quantile(
     ):
         # bail to nanquantile. Assumptions are pretty strict for now but we
         # do cover the xarray.quantile case.
+        _method = method if interpolation is None else interpolation
         return np.nanquantile(
             a,
             q,
             axis=axis,
-            method=method,
-            interpolation=interpolation,
+            method=_method,
             keepdims=keepdims,
             **kwargs,
         )

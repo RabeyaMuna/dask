@@ -412,7 +412,7 @@ def _nonempty_index(idx):
         start = np.timedelta64(1, "D")
         try:
             return pd.timedelta_range(
-                start=start, periods=2, freq=idx.freq, name=idx.name
+                start=start, periods=2, freq=idx.freq, name=idx.name, unit=idx.unit
             )
         except ValueError:  # older pandas versions
             start = np.timedelta64(1, "D")
