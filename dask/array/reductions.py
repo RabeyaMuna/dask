@@ -1590,7 +1590,6 @@ def quantile(
         np.quantile,
         q=q,
         method=method,
-        interpolation=interpolation,
         axis=axis,
         keepdims=keepdims,
         drop_axis=axis if not keepdims else None,
@@ -1643,7 +1642,6 @@ def _custom_quantile(
             q,
             axis=axis,
             method=method,
-            interpolation=interpolation,
             keepdims=keepdims,
             **kwargs,
         )
