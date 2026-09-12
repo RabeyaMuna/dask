@@ -117,10 +117,17 @@ def pack_exception(e, dumps):
     tb = _pack_traceback(exc_traceback)
     try:
         result = dumps((e, tb))
-    except Exception as e:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
-        tb = _pack_traceback(exc_traceback)
-        result = dumps((e, tb))
+    except Exception:
+        # If pickling fails (e.g. due to unpicklable objects like
+        # multidict.CIMultiDictProxy in aiohttp exceptions), try to
+        # strip the exception chain and retry
+        try:
+            e.__cause__ = None
+            e.__context__ = None
+            result = dumps((e, tb))
+        except Exception:
+            # If that also fails, convert to a simple RuntimeError
+            result = dumps((RuntimeError(str(e)), tb))
     return result
 
 
