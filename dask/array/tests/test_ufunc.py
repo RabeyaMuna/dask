@@ -30,7 +30,7 @@ def test_ufunc_meta(name):
     assert disclaimer in ufunc.__doc__
 
     assert (
-        ufunc.__doc__.replace(disclaimer, "").replace(skip_test, "")
+        ufunc.__doc__.replace(disclaimer, "").replace(skip_test, "").replace("  (Not supported in Dask)", "")
         == getattr(np, name).__doc__
     )
 

@@ -3495,7 +3495,7 @@ def test_metadata_task_size(tmpdir, engine, write_metadata_file, metadata_task_s
 
 
 @PYARROW_MARK
-@pytest.mark.parametrize("partition_on", ("b", None))
+@pytest.mark.parametrize("partition_on", ["b", None])
 def test_extra_file(tmpdir, engine, partition_on):
     # Check that read_parquet can handle spark output
     # See: https://github.com/dask/dask/issues/8087
@@ -3778,12 +3778,12 @@ def test_not_in_predicate(tmp_path, engine):
 # filters to test against.
 @pytest.mark.parametrize(
     "filter_value",
-    (
+    [
         [("B", "in", 10)],
         [[("B", "in", 10)]],
         [("B", "<", 10), ("B", "in", 10)],
         [[("B", "<", 10), ("B", "in", 10)]],
-    ),
+    ],
     ids=(
         "one-item-single-nest",
         "one-item-double-nest",
