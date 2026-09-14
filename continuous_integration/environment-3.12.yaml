@@ -76,4 +76,5 @@ dependencies:
   - matplotlib  # visualize test
   - pip
   - pip:
+    - dask-expr>=2.0.0
     - git+https://github.com/dask/distributed

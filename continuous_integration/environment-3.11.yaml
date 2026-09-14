@@ -74,4 +74,5 @@ dependencies:
   - jinja2
   - pip
   - pip:
+    - dask-expr>=2.0.0
     - git+https://github.com/dask/distributed

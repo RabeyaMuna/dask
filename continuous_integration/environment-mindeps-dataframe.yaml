@@ -24,3 +24,7 @@ dependencies:
   - pytest-rerunfailures
   - pytest-timeout
   - pytest-xdist
+
+  - pip
+  - pip:
+    - dask-expr>=2.0.0
