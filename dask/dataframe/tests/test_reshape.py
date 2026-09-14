@@ -279,7 +279,8 @@ def test_pivot_table_index_dtype():
     ddf = dd.from_pandas(df, 2)
     res = dd.pivot_table(ddf, index="A", columns="B", values="C", aggfunc="count")
 
-    assert res.index.dtype == np.dtype("datetime64[ns]")
+    # pandas 2.x uses ns resolution, pandas 3.x+ uses us resolution by default
+    assert str(res.index.dtype) in ("datetime64[ns]", "datetime64[us]")
 
 
 def test_pivot_table_errors():
