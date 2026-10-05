@@ -1687,10 +1687,10 @@ class ArrowDatasetEngine(Engine):
 
         if frag:
             cols = []
-            for name in columns:
+            for name in list(columns):
                 if name is None:
                     if "__index_level_0__" in schema.names:
-                        columns.append("__index_level_0__")
+                        cols.append("__index_level_0__")
                 else:
                     cols.append(name)
 
@@ -1723,8 +1723,8 @@ class ArrowDatasetEngine(Engine):
                     if not len(partition.keys):
                         arr = pa.array(np.full(len(arrow_table), cat))
                     else:
-                        cat_ind = np.full(
-                            len(arrow_table), partition.keys.get_loc(cat), dtype="i4"
+                        cat_ind = pa.array(
+                            np.full(len(arrow_table), partition.keys.get_loc(cat), dtype="i4")
                         )
                         arr = pa.DictionaryArray.from_arrays(
                             cat_ind, pa.array(partition.keys)
