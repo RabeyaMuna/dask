@@ -76,8 +76,8 @@ def _append_row_groups(metadata, md):
     """
     try:
         metadata.append_row_groups(md)
-    except RuntimeError as err:
-        if "requires equal schemas" in str(err):
+    except (RuntimeError, ValueError) as err:
+        if "requires equal schemas" in str(err) or "Appended dtypes differ" in str(err):
             raise RuntimeError(
                 "Schemas are inconsistent, try using "
                 '`to_parquet(..., schema="infer")`, or pass an explicit '
@@ -239,7 +239,7 @@ def _read_table_from_path(
             if _is_local_fs(fs)
             else {
                 "columns": columns,
-                "row_groups": row_groups if row_groups == [None] else [row_groups],
+                "row_groups": row_groups if row_groups == [None] or isinstance(row_groups, list) else [row_groups],
                 "default_engine": "pyarrow",
                 "default_cache": "none",
             }
@@ -563,9 +563,11 @@ class ArrowDatasetEngine(Engine):
 
             # Convert row_group to a list and be sure to
             # check if msgpack converted it to a tuple
-            if isinstance(row_group, tuple):
+            if row_group is None:
+                pass
+            elif isinstance(row_group, tuple):
                 row_group = list(row_group)
-            if not isinstance(row_group, list):
+            elif not isinstance(row_group, list):
                 row_group = [row_group]
 
             # Read in arrow table and convert to pandas
@@ -1690,7 +1692,7 @@ class ArrowDatasetEngine(Engine):
             for name in columns:
                 if name is None:
                     if "__index_level_0__" in schema.names:
-                        columns.append("__index_level_0__")
+                        cols.append("__index_level_0__")
                 else:
                     cols.append(name)
 
@@ -1831,7 +1833,10 @@ class ArrowDatasetEngine(Engine):
         meta = None
         for _meta in meta_list:
             if meta:
-                _append_row_groups(meta, _meta)
+                try:
+                    _append_row_groups(meta, _meta)
+                except ValueError:
+                    raise
             else:
                 meta = _meta
         if out_path:
