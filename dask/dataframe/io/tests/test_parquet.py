@@ -1006,7 +1006,7 @@ def test_read_parquet_custom_columns(tmpdir, engine):
         (pd.DataFrame({"x": ["cc", "a", "bbb"]}), {}, {}),
         (
             pd.DataFrame({"x": [b"a", b"b", b"c"]}),
-            {"schema": {"x": pa.binary()} if pa else None},
+            {"schema": {"x": pa.binary()}} if pa else {},
             {},
         ),
         (
@@ -1649,7 +1649,7 @@ def check_compression(engine, filename, compression):
                 assert column.total_compressed_size != column.total_uncompressed_size
 
 
-@pytest.mark.parametrize("compression,", [None, "gzip", "snappy"])
+@pytest.mark.parametrize("compression", [None, "gzip", "snappy"])
 def test_writing_parquet_with_compression(tmpdir, compression, engine):
     fn = str(tmpdir)
 
@@ -1663,7 +1663,7 @@ def test_writing_parquet_with_compression(tmpdir, compression, engine):
     check_compression(engine, fn, compression)
 
 
-@pytest.mark.parametrize("compression,", [None, "gzip", "snappy"])
+@pytest.mark.parametrize("compression", [None, "gzip", "snappy"])
 def test_writing_parquet_with_partition_on_and_compression(tmpdir, compression, engine):
     fn = str(tmpdir)
 
@@ -2681,7 +2681,7 @@ PYARROW_LARGE_STRING_XFAIL = pytest.mark.xfail(
         ["part", "col"],
         pytest.param(
             ["part", "kind", "col"],
-            marks=PYARROW_LARGE_STRING_XFAIL,
+            marks=[PYARROW_LARGE_STRING_XFAIL] if PYARROW_LARGE_STRING_XFAIL else [],
         ),
     ],
 )
@@ -2720,7 +2720,7 @@ def test_partitioned_column_overlap(tmpdir, engine, write_cols):
         ["col"],
         pytest.param(
             ["part", "col"],
-            marks=PYARROW_LARGE_STRING_XFAIL,
+            marks=[PYARROW_LARGE_STRING_XFAIL] if PYARROW_LARGE_STRING_XFAIL else [],
         ),
     ],
 )
@@ -3495,7 +3495,7 @@ def test_metadata_task_size(tmpdir, engine, write_metadata_file, metadata_task_s
 
 
 @PYARROW_MARK
-@pytest.mark.parametrize("partition_on", ("b", None))
+@pytest.mark.parametrize("partition_on", ["b", None])
 def test_extra_file(tmpdir, engine, partition_on):
     # Check that read_parquet can handle spark output
     # See: https://github.com/dask/dask/issues/8087

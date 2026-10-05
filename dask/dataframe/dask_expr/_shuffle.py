@@ -204,7 +204,10 @@ class Shuffle(ShuffleBase):
         # Reduce partition count if necessary
         frame = self.frame
         npartitions_out = self.npartitions_out
-        method = self.method or get_default_shuffle_method()
+        try:
+            method = self.method or get_default_shuffle_method()
+        except ImportError:
+            method = self.method or "tasks"
 
         if npartitions_out < frame.npartitions and method != "p2p":
             frame = Repartition(frame, new_partitions=npartitions_out)
@@ -543,7 +546,13 @@ def _shuffle_transfer(
     id,
     input_partition: int,
 ) -> int:
-    from distributed.shuffle._shuffle import shuffle_transfer
+    try:
+        from distributed.shuffle._shuffle import shuffle_transfer
+    except ImportError as e:
+        raise ImportError(
+            "distributed.shuffle is unavailable or incompatible; "
+            "install a compatible distributed version to use p2p shuffle."
+        ) from e
 
     return shuffle_transfer(
         input,
@@ -560,13 +569,22 @@ class P2PShuffle(SimpleShuffle):
         return self.frame._meta.drop(columns=self.partitioning_index)
 
     def _layer(self):
-        from distributed.shuffle._core import (
-            P2PBarrierTask,
-            ShuffleId,
-            barrier_key,
-            p2p_barrier,
-        )
-        from distributed.shuffle._shuffle import DataFrameShuffleSpec, shuffle_unpack
+        try:
+            from distributed.shuffle._core import (
+                P2PBarrierTask,
+                ShuffleId,
+                barrier_key,
+                p2p_barrier,
+            )
+            from distributed.shuffle._shuffle import (
+                DataFrameShuffleSpec,
+                shuffle_unpack,
+            )
+        except ImportError as e:
+            raise ImportError(
+                "distributed.shuffle is unavailable or incompatible; "
+                "install a compatible distributed version to use p2p shuffle."
+            ) from e
 
         dsk = {}
         token = self._name.split("-")[-1]
@@ -1345,7 +1363,11 @@ def _calculate_divisions(
     partition_size: float = 128e6,
     upsample: float = 1.0,
 ):
-    from dask.dataframe.dask_expr import RepartitionQuantiles, new_collection
+    try:
+        from dask.dataframe.dask_expr import RepartitionQuantiles, new_collection
+    except ImportError:
+        from dask.dataframe.dask_expr import new_collection
+        from dask.dataframe.dask_expr._quantiles import RepartitionQuantiles
 
     if is_index_like(other._meta):
         other = ToSeriesIndex(other)
