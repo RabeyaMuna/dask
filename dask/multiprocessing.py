@@ -117,10 +117,12 @@ def pack_exception(e, dumps):
     tb = _pack_traceback(exc_traceback)
     try:
         result = dumps((e, tb))
-    except Exception as e:
+    except Exception:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         tb = _pack_traceback(exc_traceback)
-        result = dumps((e, tb))
+        # The exception may contain unpicklable objects; fall back to a
+        # picklable representation so the second dumps call cannot fail.
+        result = dumps((remote_exception(exc_value, tb), tb))
     return result
 
 

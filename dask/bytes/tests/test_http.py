@@ -200,7 +200,8 @@ def test_bag():
     urls = [
         "https://raw.githubusercontent.com/weierophinney/pastebin/"
         "master/public/js-src/dojox/data/tests/stores/patterns.csv",
-        "https://en.wikipedia.org",
+        "https://raw.githubusercontent.com/weierophinney/pastebin/"
+        "master/public/js-src/dojox/data/tests/stores/patterns.csv",
     ]
     b = db.read_text(urls)
     assert b.npartitions == 2

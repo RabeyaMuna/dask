@@ -54,7 +54,7 @@ ddf = dd.from_pandas(df, npartitions=npartitions)
 
 _engine_fixture = pytest.fixture(
     params=[
-        pytest.param("pyarrow", marks=[PYARROW_MARK]),
+        pytest.param("pyarrow", marks=[PYARROW_MARK] if SKIP_PYARROW else []),
     ]
 )
 
@@ -1006,7 +1006,7 @@ def test_read_parquet_custom_columns(tmpdir, engine):
         (pd.DataFrame({"x": ["cc", "a", "bbb"]}), {}, {}),
         (
             pd.DataFrame({"x": [b"a", b"b", b"c"]}),
-            {"schema": {"x": pa.binary()} if pa else None},
+            {"schema": {"x": pa.binary()}} if pa else {},
             {},
         ),
         (
@@ -1900,8 +1900,8 @@ def test_append_cat_fp(tmpdir, engine):
         pd.DataFrame({"x": [4, 5, 6, 1, 2, 3]}),
         pd.DataFrame({"x": ["c", "a", "b"]}),
         pd.DataFrame({"x": ["cc", "a", "bbb"]}),
-        pytest.param(pd.DataFrame({"x": pd.Categorical(["a", "b", "a"])})),
-        pytest.param(pd.DataFrame({"x": pd.Categorical([1, 2, 1])})),
+        pytest.param(pd.DataFrame({"x": pd.Categorical(["a", "b", "a"])}), id="cat_str"),
+        pytest.param(pd.DataFrame({"x": pd.Categorical([1, 2, 1])}), id="cat_int"),
         pd.DataFrame({"x": list(map(pd.Timestamp, [3000000, 2000000, 1000000]))}),  # ms
         pd.DataFrame({"x": list(map(pd.Timestamp, [3000, 2000, 1000]))}),  # us
         pd.DataFrame({"x": [3000, 2000, 1000]}).astype("M8[ns]"),

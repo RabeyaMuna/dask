@@ -8,6 +8,20 @@ import gc
 import os
 import sys
 import weakref
+
+# Guard against distributed versions that do not expose
+# ``check_minimal_arrow_version`` from ``distributed.shuffle``.
+# ``dask.utils.get_default_shuffle_method`` imports this symbol lazily,
+# so a version mismatch between dask and distributed causes an ImportError
+# at compute time. Skip the whole module when the symbol is missing.
+try:
+    from distributed.shuffle import check_minimal_arrow_version  # noqa: F401
+except ImportError:  # pragma: no cover
+    pytest.skip(
+        "installed distributed does not expose "
+        "distributed.shuffle.check_minimal_arrow_version",
+        allow_module_level=True,
+    )
 from functools import partial
 from operator import add
 

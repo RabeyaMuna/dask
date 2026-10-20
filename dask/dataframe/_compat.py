@@ -8,12 +8,12 @@ from dask._compatibility import import_optional_dependency
 
 import_optional_dependency("pandas")
 import_optional_dependency("numpy")
-import_optional_dependency("pyarrow")
 
 import numpy as np
 import pandas as pd
-import pyarrow as pa
 from packaging.version import Version
+
+pa = import_optional_dependency("pyarrow", errors="ignore")
 
 PANDAS_VERSION = Version(pd.__version__)
 PANDAS_GE_201 = PANDAS_VERSION.release >= (2, 0, 1)
@@ -24,9 +24,14 @@ PANDAS_GE_220 = PANDAS_VERSION.release >= (2, 2, 0)
 PANDAS_GE_230 = PANDAS_VERSION.release >= (2, 3, 0)
 PANDAS_GE_300 = PANDAS_VERSION.major >= 3
 
-PYARROW_VERSION = Version(pa.__version__)
-PYARROW_GE_1500 = PYARROW_VERSION.release >= (15, 0, 0)
-PYARROW_GE_2101 = PYARROW_VERSION.release >= (21, 0, 1)
+if pa is not None:
+    PYARROW_VERSION = Version(pa.__version__)
+    PYARROW_GE_1500 = PYARROW_VERSION.release >= (15, 0, 0)
+    PYARROW_GE_2101 = PYARROW_VERSION.release >= (21, 0, 1)
+else:
+    PYARROW_VERSION = None
+    PYARROW_GE_1500 = False
+    PYARROW_GE_2101 = False
 
 import pandas.testing as tm
 

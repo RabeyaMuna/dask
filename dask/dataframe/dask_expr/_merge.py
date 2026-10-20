@@ -237,7 +237,10 @@ class Merge(Expr):
         elif isinstance(self.broadcast, bool):
             broadcast = self.broadcast
 
-        s_method = self.shuffle_method or get_default_shuffle_method()
+        try:
+            s_method = self.shuffle_method or get_default_shuffle_method()
+        except ImportError:
+            s_method = self.shuffle_method or "tasks"
         if (
             s_method in ("disk", "tasks", "p2p")
             and self.how in ("inner", "left", "right", "leftsemi")
