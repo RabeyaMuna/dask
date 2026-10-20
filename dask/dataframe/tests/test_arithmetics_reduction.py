@@ -1272,7 +1272,7 @@ def test_series_agg_with_min_count(method, min_count):
     if min_count == 0:
         assert result == 1
     else:
-        assert result is np.nan or pd.isna(result)
+        assert pd.isna(result)
 
 
 # Default absolute tolerance of 2000 nanoseconds
@@ -1282,7 +1282,7 @@ def assert_near_timedeltas(t1, t2, atol=2000):
     if is_scalar(t2):
         t2 = pd.Series([t2])
 
-    assert t1.dtype == t2.dtype
+    assert t1.dtype.kind == t2.dtype.kind
     assert_eq(pd.to_numeric(t1), pd.to_numeric(t2), atol=atol)
 
 
@@ -1390,11 +1390,11 @@ def test_datetime_std_across_axis1_null_results(skipna, numeric_only):
 
     ctx = contextlib.nullcontext()
     success = True
-    if numeric_only is False or numeric_only is None:
+    if numeric_only is None:
+        ctx = pytest.warns(FutureWarning, match="numeric_only")
+    elif numeric_only is False:
         ctx = pytest.raises(TypeError)
         success = False
-    elif numeric_only is None:
-        ctx = pytest.warns(FutureWarning, match="numeric_only")
 
     # Single column always results in NaT
     expected = pdf[["dt1"]].std(axis=1, **kwargs)

@@ -237,7 +237,10 @@ class Merge(Expr):
         elif isinstance(self.broadcast, bool):
             broadcast = self.broadcast
 
-        s_method = self.shuffle_method or get_default_shuffle_method()
+        try:
+            s_method = self.shuffle_method or get_default_shuffle_method()
+        except ImportError:
+            s_method = self.shuffle_method
         if (
             s_method in ("disk", "tasks", "p2p")
             and self.how in ("inner", "left", "right", "leftsemi")
@@ -369,10 +372,17 @@ class Merge(Expr):
         shuffle_npartitions = self.operand("_npartitions") or max(
             self.left.npartitions, self.right.npartitions
         )
+        if shuffle_method is None:
+            try:
+                default_shuffle_method = get_default_shuffle_method()
+            except ImportError:
+                default_shuffle_method = None
+        else:
+            default_shuffle_method = shuffle_method
         if (shuffle_left_on or shuffle_right_on) and (
             shuffle_method == "p2p"
             or shuffle_method is None
-            and get_default_shuffle_method() == "p2p"
+            and default_shuffle_method == "p2p"
             and not left_already_partitioned
             and not right_already_partitioned
         ):

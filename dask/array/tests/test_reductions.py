@@ -1008,7 +1008,7 @@ def test_nanquantile_all_nan():
     arr[:] = np.nan
     darr = da.from_array(arr, chunks=(2, 3, 4, -1))
     da.nanquantile(darr, 0.75, axis=-1).compute()
-    with pytest.raises(RuntimeWarning):
+    with pytest.warns(RuntimeWarning):
         assert_eq(
             da.nanquantile(darr, 0.75, axis=-1), np.nanquantile(arr, 0.75, axis=-1)
         )

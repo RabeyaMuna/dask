@@ -487,6 +487,60 @@ def apply_infer_dtype(func, args, kwargs, funcname, suggest_dtype="dtype", nout=
     try:
         with np.errstate(all="ignore"):
             o = func(*args, **kwargs)
+    except TypeError as e:
+        # Handle deprecated/removed keyword arguments (e.g. numpy's
+        # ``interpolation`` -> ``method`` rename for quantile/nanquantile).
+        # Retry with the new keyword name if the old one is unsupported.
+        if "interpolation" in kwargs:
+            kwargs = dict(kwargs)
+            kwargs["method"] = kwargs.pop("interpolation")
+            try:
+                with np.errstate(all="ignore"):
+                    o = func(*args, **kwargs)
+            except Exception as e2:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                tb = "".join(traceback.format_tb(exc_traceback))
+                suggest = (
+                    (
+                        "Please specify the dtype explicitly using the "
+                        "`{dtype}` kwarg.\n\n".format(dtype=suggest_dtype)
+                    )
+                    if suggest_dtype
+                    else ""
+                )
+                msg = (
+                    f"`dtype` inference failed in `{funcname}`.\n\n"
+                    f"{suggest}"
+                    "Original error is below:\n"
+                    "------------------------\n"
+                    f"{e2!r}\n\n"
+                    "Traceback:\n"
+                    "---------\n"
+                    f"{tb}"
+                )
+            else:
+                msg = None
+        else:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            tb = "".join(traceback.format_tb(exc_traceback))
+            suggest = (
+                (
+                    "Please specify the dtype explicitly using the "
+                    "`{dtype}` kwarg.\n\n".format(dtype=suggest_dtype)
+                )
+                if suggest_dtype
+                else ""
+            )
+            msg = (
+                f"`dtype` inference failed in `{funcname}`.\n\n"
+                f"{suggest}"
+                "Original error is below:\n"
+                "------------------------\n"
+                f"{e!r}\n\n"
+                "Traceback:\n"
+                "---------\n"
+                f"{tb}"
+            )
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         tb = "".join(traceback.format_tb(exc_traceback))

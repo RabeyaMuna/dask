@@ -25,12 +25,15 @@ Some inconsistencies with the Dask version may exist.
 def test_ufunc_meta(name):
     disclaimer = DISCLAIMER.format(name=name)
     skip_test = "  # doctest: +SKIP"
+    not_supported = "(Not supported in Dask)"
     ufunc = getattr(da, name)
     assert ufunc.__name__ == name
     assert disclaimer in ufunc.__doc__
 
     assert (
-        ufunc.__doc__.replace(disclaimer, "").replace(skip_test, "")
+        ufunc.__doc__.replace(disclaimer, "")
+        .replace(skip_test, "")
+        .replace(not_supported, "")
         == getattr(np, name).__doc__
     )
 

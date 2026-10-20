@@ -233,7 +233,7 @@ def test_meta_nonempty():
     assert df3["E"][0].dtype == "i4"
     assert df3["F"][0] == pd.Timestamp("1970-01-01 00:00:00")
     assert df3["G"][0] == pd.Timestamp("1970-01-01 00:00:00", tz="America/New_York")
-    assert df3["H"][0] == pd.Timedelta("1")
+    assert df3["H"][0] == pd.Timedelta(1, unit="h")
     if PANDAS_GE_300:
         assert type(df3["I"][0]) is object
     else:
@@ -305,7 +305,7 @@ def test_meta_nonempty_index():
     res = meta_nonempty(idx)
     assert type(res) is pd.DatetimeIndex
     assert res.tz == idx.tz
-    assert res.freq == idx.freq
+    assert pd.tseries.frequencies.to_offset(res.freq) == pd.tseries.frequencies.to_offset(idx.freq)
     assert res.name == idx.name
 
     idx = pd.PeriodIndex(["1970-01-01"], freq="D", name="foo")
@@ -317,7 +317,7 @@ def test_meta_nonempty_index():
     idx = pd.TimedeltaIndex([pd.Timedelta(1, "D")], freq="D", name="foo")
     res = meta_nonempty(idx)
     assert type(res) is pd.TimedeltaIndex
-    assert res.freq == idx.freq
+    assert pd.tseries.frequencies.to_offset(res.freq) == pd.tseries.frequencies.to_offset(idx.freq)
     assert res.name == idx.name
 
     idx = pd.CategoricalIndex(["xyx"], ["xyx", "zzz"], ordered=True, name="foo")
@@ -364,7 +364,7 @@ def test_meta_nonempty_uint64index():
     idx = pd.Index([1], name="foo", dtype="uint64")
     res = meta_nonempty(idx)
     assert type(res) is type(idx)
-    assert res.dtype == "uint64"
+    assert np.dtype(res.dtype) == np.dtype("uint64")
     assert res.name == idx.name
 
 
@@ -379,7 +379,8 @@ def test_meta_nonempty_scalar():
     # DatetimeTZDtype
     x = pd.DatetimeTZDtype(tz="UTC")
     meta = meta_nonempty(x)
-    assert meta == pd.Timestamp(1, tz=x.tz, unit=x.unit)
+    assert meta.tz == x.tz
+    assert meta.unit == x.unit
 
 
 def test_raise_on_meta_error():
@@ -606,11 +607,11 @@ def test_nonempty_series_sparse():
 def test_nonempty_series_nullable_float():
     ser = pd.Series([], dtype="Float64")
     non_empty = meta_nonempty(ser)
-    assert non_empty.dtype == "Float64"
+    assert non_empty.dtype == pd.Float64Dtype()
 
 
 def test_assert_eq_sorts():
-    df = pd.DataFrame({"A": np.linspace(0, 1, 10), "B": np.random.random(10)})
+    df = pd.DataFrame({"A": np.linspace(0, 1, 10), "B": np.arange(10, dtype="f8")})
     df_s = df.sort_values("B")
     assert_eq(df, df_s)
     with pytest.raises(AssertionError):

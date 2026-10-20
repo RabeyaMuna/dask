@@ -870,6 +870,7 @@ def test_set_index_no_resursion_error(c):
     # see: https://github.com/dask/dask/issues/8955
     pytest.importorskip("pandas")
     pytest.importorskip("dask.dataframe")
+    pytest.importorskip("dask.datasets")
     try:
         ddf = (
             dask.datasets.timeseries(start="2000-01-01", end="2000-07-01", freq="12h")
@@ -936,6 +937,7 @@ def test_get_scheduler_lock_distributed(c, multiprocessing_method):
     pytest.importorskip("pandas")
     da = pytest.importorskip("dask.array", reason="Requires dask.array")
     dd = pytest.importorskip("dask.dataframe", reason="Requires dask.dataframe")
+    db = pytest.importorskip("dask.bag", reason="Requires dask.bag")
 
     darr = da.ones((100,))
     ddf = dd.from_dask_array(darr, columns=["x"])
@@ -958,6 +960,7 @@ def test_write_single_hdf(c, lock_param):
     pytest.importorskip("pandas")
     pytest.importorskip("dask.dataframe")
     pytest.importorskip("tables")
+    pytest.importorskip("dask.datasets")
     with tmpfile(extension="hd5") as f:
         ddf = dask.datasets.timeseries(start="2000-01-01", end="2000-07-01", freq="12h")
         ddf.to_hdf(str(f), key="/ds_*", lock=lock_param)

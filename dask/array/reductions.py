@@ -1491,6 +1491,7 @@ def median(a, axis=None, keepdims=False, out=None):
             if keepdims
             else None
         ),
+        dtype=a.dtype,
     )
 
     result = handle_out(out, result)
@@ -1590,7 +1591,6 @@ def quantile(
         np.quantile,
         q=q,
         method=method,
-        interpolation=interpolation,
         axis=axis,
         keepdims=keepdims,
         drop_axis=axis if not keepdims else None,
@@ -1643,7 +1643,6 @@ def _custom_quantile(
             q,
             axis=axis,
             method=method,
-            interpolation=interpolation,
             keepdims=keepdims,
             **kwargs,
         )
@@ -1747,7 +1746,6 @@ def nanquantile(
         kwargs = {
             "q": q,
             "method": method,
-            "interpolation": interpolation,
             "keepdims": keepdims,
         }
         if NUMPY_GE_200:

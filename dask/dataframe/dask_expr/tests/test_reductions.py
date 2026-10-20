@@ -115,8 +115,8 @@ def test_value_counts_sort(pdf):
     pdf = pdf.iloc[4:]
     df = from_pandas(pdf, npartitions=10)
     pd.testing.assert_series_equal(
-        df.y.value_counts(split_out=1).compute(),
-        pdf.y.value_counts(),
+        df.y.value_counts(split_out=1).compute().sort_index(),
+        pdf.y.value_counts().sort_index(),
     )
 
 

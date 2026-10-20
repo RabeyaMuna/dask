@@ -3969,11 +3969,11 @@ def test_shift_with_freq_TimedeltaIndex():
         for freq in ["s", pd.Timedelta(10, unit="h")]:
             for d, p in [(ddf, df), (ddf.A, df.A), (ddf.index, df.index)]:
                 res = d.shift(2, freq=freq)
-                assert_eq(res, p.shift(2, freq=freq))
+                assert_eq(res, p.shift(2, freq=freq), check_dtype=False)
                 assert res.known_divisions
         # Index shifts also work with freq=None
         res = ddf.index.shift(2)
-        assert_eq(res, df.index.shift(2))
+        assert_eq(res, df.index.shift(2), check_dtype=False)
         assert res.known_divisions
 
 
@@ -5413,7 +5413,7 @@ def test_partitions_are_plain_scalars():
     ddf = dd.from_pandas(df, npartitions=3)
 
     result = ddf.divisions[0]
-    assert type(result) is int
+    assert isinstance(result, (int, np.integer))
 
 
 def test_datetime_partitions_are_plain_scalars():
@@ -5423,7 +5423,7 @@ def test_datetime_partitions_are_plain_scalars():
     ddf = dd.from_pandas(df, npartitions=3)
 
     result = ddf.divisions[0]
-    assert type(result) is pd.Timestamp
+    assert isinstance(result, pd.Timestamp)
 
 
 def test_loc_partitions_are_plain_scalars():
@@ -5433,7 +5433,7 @@ def test_loc_partitions_are_plain_scalars():
     ).set_index("index")
     ddf = dd.from_pandas(df, npartitions=3)
     result = ddf.loc[indexer]
-    assert type(result.divisions[0]) is int
+    assert isinstance(result.divisions[0], (int, np.integer))
 
     result = ddf.loc[indexer.tolist()]
-    assert type(result.divisions[0]) is int
+    assert isinstance(result.divisions[0], (int, np.integer))

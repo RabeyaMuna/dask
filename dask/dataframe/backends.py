@@ -34,15 +34,26 @@ from dask.dataframe.dispatch import (
     union_categoricals_dispatch,
 )
 from dask.dataframe.extensions import make_array_nonempty, make_scalar
-from dask.dataframe.utils import (
-    _empty_series,
-    _nonempty_scalar,
-    _scalar_from_dtype,
-    is_float_na_dtype,
-    is_integer_na_dtype,
-)
 from dask.sizeof import SimpleSizeof, sizeof
 from dask.utils import is_arraylike, is_series_like, typename
+
+
+def _get_dataframe_utils():
+    from dask.dataframe.utils import (
+        _empty_series,
+        _nonempty_scalar,
+        _scalar_from_dtype,
+        is_float_na_dtype,
+        is_integer_na_dtype,
+    )
+
+    return (
+        _empty_series,
+        _nonempty_scalar,
+        _scalar_from_dtype,
+        is_float_na_dtype,
+        is_integer_na_dtype,
+    )
 
 # https://github.com/dask/dask/issues/12072
 # pyarrow is a required dependency of dask.dataframe However, dask-array
@@ -397,12 +408,11 @@ def _nonempty_index(idx):
                 freq=idx.freq,
                 tz=idx.tz,
                 name=idx.name,
-                unit=idx.unit,
             )
         except ValueError:  # older pandas versions
             data = [start, "1970-01-02"] if idx.freq is None else None
             return pd.DatetimeIndex(
-                data, start=start, periods=2, freq=idx.freq, tz=idx.tz, name=idx.name
+                data, freq=idx.freq, tz=idx.tz, name=idx.name
             )
     elif typ is pd.PeriodIndex:
         return pd.period_range(
@@ -416,9 +426,9 @@ def _nonempty_index(idx):
             )
         except ValueError:  # older pandas versions
             start = np.timedelta64(1, "D")
-            data = [start, start + 1] if idx.freq is None else None
+            data = [start, start + np.timedelta64(1, "D")] if idx.freq is None else None
             return pd.TimedeltaIndex(
-                data, start=start, periods=2, freq=idx.freq, name=idx.name
+                data, freq=idx.freq, name=idx.name
             )
     elif typ is pd.CategoricalIndex:
         if len(idx.categories) == 0:

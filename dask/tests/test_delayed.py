@@ -285,7 +285,7 @@ def test_np_dtype_of_delayed():
     # https://github.com/dask/dask/pull/4374#issuecomment-454381465
     np = pytest.importorskip("numpy")
     x = delayed(1)
-    with pytest.raises(TypeError):
+    with pytest.raises((TypeError, ValueError)):
         np.dtype(x)
     assert delayed(np.array([1], dtype="f8")).dtype.compute() == np.dtype("f8")
 

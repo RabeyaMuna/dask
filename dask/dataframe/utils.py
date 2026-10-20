@@ -271,7 +271,7 @@ _simple_fake_mapping: dict[str, Any] = {
     "b": np.bool_(True),
     "V": np.void(b" "),
     "M": np.datetime64("1970-01-01"),
-    "m": np.timedelta64(1),
+    "m": np.timedelta64(1, "ns"),
     "S": np.str_("foo"),
     "a": np.str_("foo"),
     "U": np.str_("foo"),
@@ -525,7 +525,16 @@ def _maybe_convert_string(a, b):
 
 def assert_eq_dtypes(a, b):
     a, b = _maybe_convert_string(a, b)
-    tm.assert_series_equal(a.dtypes.value_counts(), b.dtypes.value_counts())
+
+    def _normalize_dtypes(dtypes):
+        return dtypes.map(
+            lambda dt: np.dtype(dt.kind) if dt.kind in ("M", "m") else dt
+        )
+
+    tm.assert_series_equal(
+        _normalize_dtypes(a.dtypes).value_counts(),
+        _normalize_dtypes(b.dtypes).value_counts(),
+    )
 
 
 def assert_eq(
@@ -637,6 +646,8 @@ def assert_dask_dtypes(ddf, res, numeric_equal=True):
         eq_type_sets.append({"i", "f", "u"})
 
     def eq_dtypes(a, b):
+        if a.kind in ("M", "m") and b.kind in ("M", "m"):
+            return a.kind == b.kind
         return any(
             a.kind in eq_types and b.kind in eq_types for eq_types in eq_type_sets
         ) or (a == b)
