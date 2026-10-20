@@ -36,13 +36,6 @@ from dask.dataframe.dispatch import (
     union_categoricals_dispatch,
 )
 from dask.dataframe.extensions import make_array_nonempty, make_scalar
-from dask.dataframe.utils import (
-    _empty_series,
-    _nonempty_scalar,
-    _scalar_from_dtype,
-    is_float_na_dtype,
-    is_integer_na_dtype,
-)
 from dask.sizeof import SimpleSizeof, sizeof
 from dask.utils import is_arraylike, is_series_like, typename
 

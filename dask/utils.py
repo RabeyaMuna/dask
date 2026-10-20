@@ -2238,7 +2238,7 @@ def get_default_shuffle_method() -> str:
         from distributed.shuffle import check_minimal_arrow_version
 
         check_minimal_arrow_version()
-    except ModuleNotFoundError:
+    except (ModuleNotFoundError, ImportError):
         return "tasks"
     return "p2p"
 

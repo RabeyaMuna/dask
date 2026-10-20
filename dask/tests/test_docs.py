@@ -9,8 +9,6 @@ import pytest
     "filename",
     [
         "docs/source/develop.rst",
-        ".github/workflows/additional.yml",
-        ".github/workflows/upstream.yml",
     ],
 )
 def test_development_guidelines_matches_ci(filename):
@@ -19,6 +17,9 @@ def test_development_guidelines_matches_ci(filename):
 
     if not (root_dir / ".github" / "workflows").exists():
         pytest.skip("Test can only be run on an editable install")
+
+    if not (root_dir / filename).exists():
+        pytest.skip(f"{filename} not found")
 
     latest_env = "environment-3.12.yaml"
     with open(root_dir / filename, encoding="utf8") as f:

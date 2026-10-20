@@ -30,6 +30,11 @@ def df(pdf):
 @pytest.mark.filterwarnings("ignore:DataFrameGroupBy.apply operated ")
 def test_analyze(df, client, tmpdir):
     pytest.importorskip("crick")
+    pytest.importorskip("distributed.shuffle")
+    try:
+        from distributed.shuffle import check_minimal_arrow_version  # noqa: F401
+    except ImportError:
+        pytest.skip("distributed.shuffle.check_minimal_arrow_version not available")
     filename = str(tmpdir / "analyze")
     expr = df.groupby(df.columns[1]).apply(
         lambda x: x, meta=df._meta.groupby(df.columns[1]).apply(lambda x: x)

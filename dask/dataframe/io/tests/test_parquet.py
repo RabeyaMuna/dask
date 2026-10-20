@@ -1006,7 +1006,7 @@ def test_read_parquet_custom_columns(tmpdir, engine):
         (pd.DataFrame({"x": ["cc", "a", "bbb"]}), {}, {}),
         (
             pd.DataFrame({"x": [b"a", b"b", b"c"]}),
-            {"schema": {"x": pa.binary()} if pa else None},
+            {"schema": {"x": pa.binary()}} if pa else {},
             {},
         ),
         (
@@ -2669,7 +2669,7 @@ def test_arrow_to_pandas(tmpdir, engine):
 
 
 PYARROW_LARGE_STRING_XFAIL = pytest.mark.xfail(
-    condition=PANDAS_GE_300,
+    condition=bool(PANDAS_GE_300),
     reason="https://github.com/apache/arrow/issues/47177",
     strict=True,
 )

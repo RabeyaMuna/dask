@@ -916,7 +916,12 @@ Expr={expr}"""
                     f"Cannot shuffle on {bad_cols}, column(s) not in dataframe to shuffle"
                 )
 
-        if (shuffle_method or get_default_shuffle_method()) == "p2p":
+        try:
+            _default_shuffle_method = get_default_shuffle_method()
+        except ImportError:
+            _default_shuffle_method = None
+
+        if (shuffle_method or _default_shuffle_method) == "p2p":
             from distributed.shuffle._arrow import check_dtype_support
 
             check_dtype_support(self._meta)

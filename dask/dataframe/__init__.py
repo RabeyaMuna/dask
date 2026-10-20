@@ -21,7 +21,6 @@ import dask.dataframe._dtypes
 import dask.dataframe._pyarrow_compat
 from dask._dispatch import get_collection_type
 from dask.base import compute
-from dask.dataframe import backends, dispatch
 from dask.dataframe.dask_expr import (
     DataFrame,
     Index,
@@ -71,6 +70,16 @@ from dask.dataframe.io import (
     to_sql,
 )
 from dask.dataframe.utils import assert_eq
+
+
+def __getattr__(name):
+    if name in ("backends", "dispatch"):
+        import importlib
+
+        module = importlib.import_module(f"dask.dataframe.{name}")
+        globals()[name] = module
+        return module
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
     "DataFrame",
