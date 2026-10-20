@@ -409,13 +409,13 @@ def _nonempty_index(idx):
             start="1970-01-01", periods=2, freq=idx.freq, name=idx.name
         )
     elif typ is pd.TimedeltaIndex:
-        start = np.timedelta64(1, "D")
+        start = np.timedelta64(1, "ns")
         try:
             return pd.timedelta_range(
                 start=start, periods=2, freq=idx.freq, name=idx.name
             )
         except ValueError:  # older pandas versions
-            start = np.timedelta64(1, "D")
+            start = np.timedelta64(1, "ns")
             data = [start, start + 1] if idx.freq is None else None
             return pd.TimedeltaIndex(
                 data, start=start, periods=2, freq=idx.freq, name=idx.name

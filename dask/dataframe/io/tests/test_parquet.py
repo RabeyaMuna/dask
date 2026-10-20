@@ -1038,11 +1038,14 @@ def test_read_parquet_custom_columns(tmpdir, engine):
 )
 @pytest.mark.skip_with_pyarrow_strings  # don't want to convert binary data to pyarrow strings
 def test_roundtrip(tmpdir, df, write_kwargs, read_kwargs, engine):
-    if "x" in df and df.x.dtype == "M8[ns]" and engine == "pyarrow":
+    if "x" in df and pd.api.types.is_datetime64_ns_dtype(df.x.dtype) and engine == "pyarrow":
         pytest.xfail(reason="Parquet pyarrow v1 doesn't support nanosecond precision")
 
     # non-ns times
-    if "x" in df and (df.x.dtype == "M8[ms]" or df.x.dtype == "M8[us]"):
+    if "x" in df and (
+        pd.api.types.is_datetime64_dtype(df.x.dtype)
+        and df.x.dtype != "datetime64[ns]"
+    ):
         if engine == "pyarrow":
             pytest.xfail("https://github.com/apache/arrow/issues/15079")
 
@@ -1082,7 +1085,7 @@ def test_categories(tmpdir, engine):
     cats_set = ddf2.map_partitions(lambda x: x.y.cat.categories.sort_values()).compute()
     assert cats_set.tolist() == ["a", "c", "a", "b"]
 
-    with pytest.raises(ValueError) or pytest.warns(FutureWarning):
+    with pytest.raises(ValueError):
         # attempt to load as category unknown column
         dd.read_parquet(fn, categories=["foo"], engine=engine)
 
@@ -1125,7 +1128,7 @@ def test_empty_partition(tmpdir, engine):
 @pytest.mark.parametrize("write_metadata", [True, False])
 def test_timestamp_index(tmpdir, engine, write_metadata):
     fn = str(tmpdir)
-    df = dd._compat.makeTimeDataFrame()
+    df = pd.util.testing.makeTimeDataFrame()
     df.index.name = "foo"
     ddf = dd.from_pandas(df, npartitions=5)
     ddf.to_parquet(fn, engine=engine, write_metadata_file=write_metadata)
@@ -1193,13 +1196,18 @@ def test_to_parquet_pyarrow_w_inconsistent_schema_by_partition_succeeds_w_manual
     # Check array support
     arrays_after_write = ddf_after_write.arrays.values
     for i in range(len(df)):
-        assert np.array_equal(arrays_after_write[i], out_arrays[i]), type(out_arrays[i])
+        if out_arrays[i] is None:
+            assert arrays_after_write[i] is None or pd.isna(arrays_after_write[i])
+        else:
+            assert np.array_equal(arrays_after_write[i], out_arrays[i]), type(
+                out_arrays[i]
+            )
 
     # Check datetime support
     tstamps_after_write = ddf_after_write.tstamps.values
     for i in range(len(df)):
         # Need to test NaT separately
-        if np.isnat(tstamps_after_write[i]):
+        if tstamps_after_write[i] is None or np.isnat(tstamps_after_write[i]):
             assert np.isnat(out_tstamps[i])
         else:
             assert tstamps_after_write[i] == out_tstamps[i]
@@ -1208,16 +1216,21 @@ def test_to_parquet_pyarrow_w_inconsistent_schema_by_partition_succeeds_w_manual
     tz_tstamps_after_write = ddf_after_write.tz_tstamps.values
     for i in range(len(df)):
         # Need to test NaT separately
-        if np.isnat(tz_tstamps_after_write[i]):
+        if tz_tstamps_after_write[i] is None or np.isnat(tz_tstamps_after_write[i]):
             assert np.isnat(out_tz_tstamps[i])
         else:
             assert tz_tstamps_after_write[i] == out_tz_tstamps[i]
 
     # Check string support
-    assert np.array_equal(ddf_after_write.strings.values, out_strings)
+    assert np.array_equal(
+        np.asarray(ddf_after_write.strings.values, dtype=object),
+        np.asarray(out_strings, dtype=object),
+    )
 
     # Check partition column
-    assert np.array_equal(ddf_after_write.partition_column, df.partition_column)
+    assert np.array_equal(
+        np.asarray(ddf_after_write.partition_column), np.asarray(df.partition_column)
+    )
 
 
 @PYARROW_MARK
@@ -1241,7 +1254,7 @@ def test_pyarrow_schema_inference(tmpdir, index, schema):
                     "2017-01-06",
                     "2017-01-09",
                 ],
-                unit=None if not PANDAS_GE_300 else "ms",
+                unit="ns",
             ),
             "amount": [100, 200, 300, 400, 500, 600, 700],
         },
@@ -1634,6 +1647,7 @@ def test_columns_name(tmpdir, engine):
 def check_compression(engine, filename, compression):
     assert engine == "pyarrow"
     metadata = pa.parquet.read_metadata(os.path.join(filename, "_metadata"))
+    assert metadata is not None
     names = metadata.schema.names
     for i in range(metadata.num_row_groups):
         row_group = metadata.row_group(i)
@@ -1760,7 +1774,7 @@ def pandas_metadata(request):
 def test_read_no_metadata(tmpdir, engine):
     # use pyarrow.parquet to create a parquet file without
     # pandas metadata
-    tmp = str(tmpdir) + "table.parq"
+    tmp = os.path.join(str(tmpdir), "table.parq")
 
     table = pa.Table.from_arrays(
         [pa.array([1, 2, 3]), pa.array([3, 4, 5])], names=["A", "B"]
@@ -2186,10 +2200,10 @@ def test_filter_nulls(tmpdir, filters, op, length, split_row_groups, engine):
             "c": ["a", None] * 2 + [None] * 11,
         }
     )
-    df.to_parquet(path, engine="pyarrow", row_group_size=10)
+    df.to_parquet(str(path), engine="pyarrow", row_group_size=10)
 
     result = dd.read_parquet(
-        path,
+        str(path),
         engine=engine,
         filters=filters,
         split_row_groups=split_row_groups,
@@ -2202,10 +2216,12 @@ def test_filter_nulls(tmpdir, filters, op, length, split_row_groups, engine):
 @pytest.mark.parametrize("split_row_groups", [True, False])
 def test_filter_isna(tmpdir, split_row_groups):
     path = tmpdir.join("test.parquet")
-    pd.DataFrame({"a": [1, None] * 5 + [None] * 5}).to_parquet(path, row_group_size=10)
+    pd.DataFrame({"a": [1, None] * 5 + [None] * 5}).to_parquet(
+        str(path), row_group_size=10
+    )
 
     result_isna = dd.read_parquet(
-        path,
+        str(path),
         filters=[("a", "is", np.nan)],
         split_row_groups=split_row_groups,
     )
@@ -4048,20 +4064,22 @@ def test_non_categorical_partitioning_pyarrow(tmpdir, filters):
 @PYARROW_MARK
 def test_read_parquet_lists_not_converting(tmpdir):
     df = pd.DataFrame({"a": [1, 2], "b": [{"a": 2}, {"a": 4}]})
-    df.to_parquet(tmpdir + "test.parquet")
-    result = dd.read_parquet(tmpdir + "test.parquet").compute()
+    path = os.path.join(str(tmpdir), "test.parquet")
+    df.to_parquet(path)
+    result = dd.read_parquet(path).compute()
     assert_eq(df, result)
 
 
 @PYARROW_MARK
 def test_parquet_string_roundtrip(tmpdir):
     pdf = pd.DataFrame({"a": ["a", "b", "c"]}, dtype="string[pyarrow]")
-    pdf.to_parquet(tmpdir + "string.parquet")
+    path = os.path.join(str(tmpdir), "string.parquet")
+    pdf.to_parquet(path)
     if not pyarrow_strings_enabled():
         # If auto pyarrow strings aren't enabled, we match pandas behavior.
         # Pandas currently doesn't roundtrip `string[pyarrow]` through parquet.
         # See https://github.com/pandas-dev/pandas/issues/42664
-        pdf = pd.read_parquet(tmpdir + "string.parquet")
+        pdf = pd.read_parquet(path)
     df = dd.read_parquet(tmpdir + "string.parquet")
     assert_eq(df, pdf)
     pd.testing.assert_frame_equal(df.compute(), pdf)
@@ -4075,7 +4093,8 @@ def test_parquet_botocore_exception(tmpdir):
     from botocore.exceptions import BotoCoreError
 
     pdf = pd.DataFrame({"a": ["a", "b", "c"]}, dtype="string[pyarrow]")
-    pdf.to_parquet(tmpdir + "string.parquet")
+    path = os.path.join(str(tmpdir), "string.parquet")
+    pdf.to_parquet(path)
 
     def mock_get_engine(engine):
         raise BotoCoreError

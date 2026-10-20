@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import warnings
+
 import pytest
 
 try:
-    from dask.dataframe.utils import pyarrow_strings_enabled
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", DeprecationWarning)
+        from dask.dataframe.utils import pyarrow_strings_enabled
 
-    convert_string = pyarrow_strings_enabled()
-except (ImportError, RuntimeError):
+        convert_string = pyarrow_strings_enabled()
+except (ImportError, RuntimeError, DeprecationWarning):
     convert_string = False
 
 skip_with_pyarrow_strings = pytest.mark.skipif(

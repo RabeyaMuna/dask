@@ -9,9 +9,14 @@ import dask.dataframe as dd
 from dask.base import compute as dask_compute
 from dask.dataframe import methods
 from dask.dataframe._compat import PANDAS_GE_300
-from dask.dataframe.utils import pyarrow_strings_enabled
 from dask.delayed import delayed, tokenize
 from dask.utils import parse_bytes
+
+
+def _pyarrow_strings_enabled():
+    from dask.dataframe.utils import pyarrow_strings_enabled
+
+    return pyarrow_strings_enabled()
 
 
 def read_sql_query(

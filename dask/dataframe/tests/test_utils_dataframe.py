@@ -233,7 +233,7 @@ def test_meta_nonempty():
     assert df3["E"][0].dtype == "i4"
     assert df3["F"][0] == pd.Timestamp("1970-01-01 00:00:00")
     assert df3["G"][0] == pd.Timestamp("1970-01-01 00:00:00", tz="America/New_York")
-    assert df3["H"][0] == pd.Timedelta("1")
+    assert df3["H"][0] == pd.Timedelta("1", unit="h")
     if PANDAS_GE_300:
         assert type(df3["I"][0]) is object
     else:
@@ -380,6 +380,8 @@ def test_meta_nonempty_scalar():
     x = pd.DatetimeTZDtype(tz="UTC")
     meta = meta_nonempty(x)
     assert meta == pd.Timestamp(1, tz=x.tz, unit=x.unit)
+    assert meta.unit == x.unit
+    assert meta.tz == x.tz
 
 
 def test_raise_on_meta_error():
@@ -606,7 +608,7 @@ def test_nonempty_series_sparse():
 def test_nonempty_series_nullable_float():
     ser = pd.Series([], dtype="Float64")
     non_empty = meta_nonempty(ser)
-    assert non_empty.dtype == "Float64"
+    assert non_empty.dtype == pd.Float64Dtype()
 
 
 def test_assert_eq_sorts():

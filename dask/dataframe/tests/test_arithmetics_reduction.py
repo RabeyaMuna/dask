@@ -1272,7 +1272,7 @@ def test_series_agg_with_min_count(method, min_count):
     if min_count == 0:
         assert result == 1
     else:
-        assert result is np.nan or pd.isna(result)
+        assert pd.isna(result)
 
 
 # Default absolute tolerance of 2000 nanoseconds
@@ -1388,13 +1388,14 @@ def test_datetime_std_across_axis1_null_results(skipna, numeric_only):
     kwargs = {} if numeric_only is None else {"numeric_only": numeric_only}
     kwargs["skipna"] = skipna
 
-    ctx = contextlib.nullcontext()
     success = True
-    if numeric_only is False or numeric_only is None:
-        ctx = pytest.raises(TypeError)
+    if numeric_only is False:
+        ctx_factory = lambda: pytest.raises(TypeError)
         success = False
     elif numeric_only is None:
-        ctx = pytest.warns(FutureWarning, match="numeric_only")
+        ctx_factory = lambda: pytest.warns(FutureWarning, match="numeric_only")
+    else:
+        ctx_factory = contextlib.nullcontext
 
     # Single column always results in NaT
     expected = pdf[["dt1"]].std(axis=1, **kwargs)
@@ -1403,9 +1404,9 @@ def test_datetime_std_across_axis1_null_results(skipna, numeric_only):
         assert_eq(result, expected)
 
     # Mix of datetimes with other numeric types produces NaNs
-    with ctx:
+    with ctx_factory():
         expected = pdf.std(axis=1, **kwargs)
-    with ctx:
+    with ctx_factory():
         result = ddf.std(axis=1, **kwargs)
     if success:
         assert_eq(result, expected)

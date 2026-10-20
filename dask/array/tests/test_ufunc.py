@@ -30,7 +30,9 @@ def test_ufunc_meta(name):
     assert disclaimer in ufunc.__doc__
 
     assert (
-        ufunc.__doc__.replace(disclaimer, "").replace(skip_test, "")
+        ufunc.__doc__.replace(disclaimer, "")
+        .replace(skip_test, "")
+        .replace("(Not supported in Dask)", "")
         == getattr(np, name).__doc__
     )
 
@@ -566,7 +568,7 @@ def test_ufunc_where_no_out():
     # `where` wasn't provided (to test that `where` was actually passed).
 
     expected_masked = np.where(where, expected, 0)
-    result_masked = np.where(where, expected, 0)
+    result_masked = np.where(where, result.compute(), 0)
     assert_eq(expected_masked, result_masked)
 
     expected_no_where = np.add(left, right)

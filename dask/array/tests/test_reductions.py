@@ -54,7 +54,8 @@ def test_numel(dtype, keepdims, nan):
 
     for length in range(x.ndim):
         for sub in itertools.combinations([d for d in range(x.ndim)], length):
-            ssub = np.random.default_rng().shuffle(list(sub))
+            ssub = list(sub)
+            np.random.default_rng().shuffle(ssub)
             assert_eq(
                 numel(x, axis=ssub, keepdims=keepdims, dtype=dtype),
                 _sum(x, axis=ssub, keepdims=keepdims, dtype=dtype),

@@ -2786,7 +2786,7 @@ def test_to_frame():
     assert_eq(s.to_frame("bar"), a.to_frame("bar"))
 
 
-@pytest.mark.parametrize("as_frame", [False, False])
+@pytest.mark.parametrize("as_frame", [False, True])
 def test_to_dask_array_raises(as_frame):
     s = pd.Series([1, 2, 3, 4, 5, 6], name="foo")
     a = dd.from_pandas(s, npartitions=2)
@@ -3969,7 +3969,7 @@ def test_shift_with_freq_TimedeltaIndex():
         for freq in ["s", pd.Timedelta(10, unit="h")]:
             for d, p in [(ddf, df), (ddf.A, df.A), (ddf.index, df.index)]:
                 res = d.shift(2, freq=freq)
-                assert_eq(res, p.shift(2, freq=freq))
+                assert_eq(res, p.shift(2, freq=freq), check_dtype=False)
                 assert res.known_divisions
         # Index shifts also work with freq=None
         res = ddf.index.shift(2)

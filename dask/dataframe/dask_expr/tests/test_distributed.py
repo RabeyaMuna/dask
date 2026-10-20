@@ -12,8 +12,15 @@ from dask.dataframe.dask_expr.tests._util import _backend_library
 distributed = pytest.importorskip("distributed")
 
 from distributed import Client, LocalCluster
-from distributed.shuffle._core import id_from_key
 from distributed.utils_test import gen_cluster  # noqa F401
+
+try:
+    from distributed.shuffle._core import id_from_key
+except ImportError:
+    pytest.skip(
+        "distributed.shuffle._core.id_from_key is not available",
+        allow_module_level=True,
+    )
 
 import dask.dataframe as dd
 

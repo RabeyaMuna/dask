@@ -936,6 +936,7 @@ def test_get_scheduler_lock_distributed(c, multiprocessing_method):
     pytest.importorskip("pandas")
     da = pytest.importorskip("dask.array", reason="Requires dask.array")
     dd = pytest.importorskip("dask.dataframe", reason="Requires dask.dataframe")
+    db = pytest.importorskip("dask.bag", reason="Requires dask.bag")
 
     darr = da.ones((100,))
     ddf = dd.from_dask_array(darr, columns=["x"])

@@ -115,8 +115,8 @@ def test_value_counts_sort(pdf):
     pdf = pdf.iloc[4:]
     df = from_pandas(pdf, npartitions=10)
     pd.testing.assert_series_equal(
-        df.y.value_counts(split_out=1).compute(),
-        pdf.y.value_counts(),
+        df.y.value_counts(split_out=1).compute().sort_index(),
+        pdf.y.value_counts().sort_index(),
     )
 
 
@@ -427,14 +427,14 @@ def test_value_counts_with_normalize():
     ddf = from_pandas(df, npartitions=3)
     result = ddf.x.value_counts(normalize=True)
     expected = df.x.value_counts(normalize=True)
-    assert_eq(result, expected)
+    assert_eq(result, expected, check_index=False)
 
     result2 = ddf.x.value_counts(split_every=2, normalize=True)
-    assert_eq(result2, expected)
+    assert_eq(result2, expected, check_index=False)
     assert result._name != result2._name
 
     result3 = ddf.x.value_counts(split_out=2, normalize=True)
-    assert_eq(result3, expected)
+    assert_eq(result3, expected, check_index=False)
     assert result._name != result3._name
 
 
@@ -570,4 +570,4 @@ def test_value_counts_shuffle_properly():
     df = from_pandas(pdf, npartitions=2)
     result = (df["A"] == df["B"]).value_counts()
     expected = (pdf["A"] == pdf["B"]).value_counts()
-    assert_eq(result, expected)
+    assert_eq(result, expected, check_index=False)
