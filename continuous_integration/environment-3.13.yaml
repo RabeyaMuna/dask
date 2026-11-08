@@ -23,14 +23,14 @@ dependencies:
   - moto<5
   # Optional dependencies
   - mimesis
-  - numpy>=2.2  # only tested here
-  - pandas
+  - numpy>=2.2,<2.4  # only tested here
+  - pandas<3
   #- numba  # not available for py 13
   - flask
   - h5py
   # Temporarily removing to allow `numpy >=2` to be installed
   # - pytables
-  - zarr
+  - zarr<3.1
   # `tiledb-py=0.17.5` lead to strange seg faults in CI, However 0.18 is needed for 3.11
   # https://github.com/dask/dask/pull/9569
   # - tiledb-py # crashes on Python 3.11
@@ -38,19 +38,19 @@ dependencies:
   # - tiledb # crashes on Python 3.11
   - xarray
   - sqlalchemy
-  - pyarrow>=14.0.1
+  - pyarrow>=14.0.1,<21
   - coverage
   - jsonschema
   # other -- IO
   - boto3
   - botocore
-  - bokeh
+  - bokeh<3.10
   - httpretty
   - aiohttp
   - s3fs>=2021.9.0
   - crick
   - cytoolz
-  - distributed
+  - distributed=2025.7.0
   - ipython
   - ipycytoscape
   # until https://github.com/jupyter-widgets/ipywidgets/issues/3731 is fixed
@@ -72,5 +72,5 @@ dependencies:
   - jinja2
   - pip
   - pip:
-    - git+https://github.com/dask/distributed
+    - git+https://github.com/dask/distributed@2025.7.0
     - mmh3

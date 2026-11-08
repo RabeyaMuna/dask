@@ -31,7 +31,7 @@ dependencies:
   - flask
   - h5py
   - pytables
-  - zarr
+  - zarr<3.1
   # `tiledb-py=0.17.5` lead to strange seg faults in CI.
   # We should unpin when possible.
   # https://github.com/dask/dask/pull/9569
@@ -47,14 +47,14 @@ dependencies:
   # other -- IO
   - boto3
   - botocore
-  - bokeh
+  - bokeh<3.10
   - bottleneck
   - httpretty
   - aiohttp
   - s3fs>=2021.9.0
   - crick
   - cytoolz
-  - distributed
+  - distributed=2025.7.0
   - ipython
   - ipycytoscape
   # until https://github.com/jupyter-widgets/ipywidgets/issues/3731 is fixed
@@ -76,4 +76,4 @@ dependencies:
   - jinja2
   - pip
   - pip:
-    - git+https://github.com/dask/distributed
+    - git+https://github.com/dask/distributed@2025.7.0

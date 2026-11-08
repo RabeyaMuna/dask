@@ -57,7 +57,7 @@ dataframe = [
 ]
 distributed = ["distributed == 2025.7.0"]
 diagnostics = [
-    "bokeh >= 3.1.0",
+    "bokeh >= 3.1.0,<3.10",
     "jinja2 >= 2.10.3",
 ]
 # keeping for backwards compatibility

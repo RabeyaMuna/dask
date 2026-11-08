@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import pytest
 
 pytest.register_assert_rewrite(
@@ -57,6 +58,7 @@ except ImportError:
 def pytest_addoption(parser):
     parser.addoption("--runslow", action="store_true", help="run slow tests")
     parser.addoption("--runarrayexpr", action="store_true", help="run array-expr tests")
+    parser.addoption("--run-network", action="store_true", help="run network tests")
 
 
 def pytest_runtest_setup(item):
@@ -67,6 +69,16 @@ def pytest_runtest_setup(item):
     elif "array_expr" not in item.keywords and item.config.getoption("--runarrayexpr"):
         if "normal_and_array_expr" not in item.keywords:
             pytest.skip("only array-expr tests are being run")
+    # Skip network tests if offline mode is enforced via HF_HUB_OFFLINE or TRANSFORMERS_OFFLINE
+    # This takes precedence over --run-network or RUN_NETWORK_TESTS
+    if "network" in item.keywords:
+        # Check for offline mode environment variables first
+        if os.environ.get("HF_HUB_OFFLINE") == "1" or os.environ.get("TRANSFORMERS_OFFLINE") == "1":
+            pytest.skip("Offline mode is enforced (HF_HUB_OFFLINE=1 or TRANSFORMERS_OFFLINE=1)")
+        # Skip network tests unless --run-network is passed or RUN_NETWORK_TESTS env var is set
+        if not item.config.getoption("--run-network"):
+            if not os.environ.get("RUN_NETWORK_TESTS"):
+                pytest.skip("need --run-network option or RUN_NETWORK_TESTS env var to run")
 
 
 def pytest_assertrepr_compare(op, left, right):

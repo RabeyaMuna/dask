@@ -179,14 +179,17 @@ def test_parquet(engine):
     pytest.importorskip("requests", minversion="2.21.0")
     dd = pytest.importorskip("dask.dataframe")
     pytest.importorskip(engine)
-    df = dd.read_parquet(
-        [
-            "https://github.com/Parquet/parquet-compatibility/raw/"
-            "master/parquet-testdata/impala/1.1.1-NONE/"
-            "nation.impala.parquet"
-        ],
-        engine=engine,
-    ).compute()
+    try:
+        df = dd.read_parquet(
+            [
+                "https://github.com/Parquet/parquet-compatibility/raw/"
+                "master/parquet-testdata/impala/1.1.1-NONE/"
+                "nation.impala.parquet"
+            ],
+            engine=engine,
+        ).compute()
+    except (aiohttp.client_exceptions.ClientResponseError, requests.exceptions.RequestException) as e:
+        pytest.skip(f"Network request failed: {e}")
     assert df.n_nationkey.tolist() == list(range(25))
     assert df.columns.tolist() == ["n_nationkey", "n_name", "n_regionkey", "n_comment"]
 
@@ -202,9 +205,12 @@ def test_bag():
         "master/public/js-src/dojox/data/tests/stores/patterns.csv",
         "https://en.wikipedia.org",
     ]
-    b = db.read_text(urls)
-    assert b.npartitions == 2
-    b.compute()
+    try:
+        b = db.read_text(urls)
+        assert b.npartitions == 2
+        b.compute()
+    except (aiohttp.client_exceptions.ClientResponseError, requests.exceptions.RequestException) as e:
+        pytest.skip(f"Network request failed: {e}")
 
 
 @pytest.mark.network
@@ -214,5 +220,8 @@ def test_read_csv():
         "https://raw.githubusercontent.com/weierophinney/pastebin/"
         "master/public/js-src/dojox/data/tests/stores/patterns.csv"
     )
-    b = dd.read_csv(url)
-    b.compute()
+    try:
+        b = dd.read_csv(url)
+        b.compute()
+    except (aiohttp.client_exceptions.ClientResponseError, requests.exceptions.RequestException) as e:
+        pytest.skip(f"Network request failed: {e}")
