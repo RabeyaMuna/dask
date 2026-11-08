@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 import dask
+from dask.dataframe._compat import PYARROW_GE_1500
 from dask.dataframe.dask_expr import Repartition, from_pandas, map_partitions, merge
 from dask.dataframe.dask_expr._merge import BroadcastJoin
 from dask.dataframe.dask_expr._shuffle import P2PShuffle, TaskShuffle
@@ -381,6 +382,7 @@ async def test_future_in_map_partitions(c, s, a, b, kind):
     pd.testing.assert_frame_equal(result, expected)
 
 
+@pytest.mark.skipif(not PYARROW_GE_1500, reason="p2p shuffle requires pyarrow>=15.0.0")
 @gen_cluster(client=True)
 async def test_shuffle_consistency_checks(c, s, a, b):
     pdf = pd.DataFrame({"x": [1, 2, 3]})
@@ -413,6 +415,7 @@ async def test_merge_indicator(c, s, a, b):
     )
 
 
+@pytest.mark.skipif(not PYARROW_GE_1500, reason="p2p shuffle requires pyarrow>=15.0.0")
 @gen_cluster(client=True)
 async def test_shuffle_partition_reduction(c, s, a, b):
     pdf = pd.DataFrame({"a": [1, 2, 3, 4] * 100, "b": 1})

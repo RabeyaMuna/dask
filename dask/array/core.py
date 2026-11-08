@@ -3928,7 +3928,8 @@ def to_zarr(
     else:
         store = url
 
-    chunks = [c[0] for c in arr.chunks]
+    # Empty Dask arrays have chunk size 0, which zarr does not accept
+    chunks = [max(c[0], 1) for c in arr.chunks]
 
     z = zarr.create(
         shape=arr.shape,

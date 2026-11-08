@@ -1649,7 +1649,7 @@ def check_compression(engine, filename, compression):
                 assert column.total_compressed_size != column.total_uncompressed_size
 
 
-@pytest.mark.parametrize("compression,", [None, "gzip", "snappy"])
+@pytest.mark.parametrize("compression", [None, "gzip", "snappy"])
 def test_writing_parquet_with_compression(tmpdir, compression, engine):
     fn = str(tmpdir)
 
@@ -1663,7 +1663,7 @@ def test_writing_parquet_with_compression(tmpdir, compression, engine):
     check_compression(engine, fn, compression)
 
 
-@pytest.mark.parametrize("compression,", [None, "gzip", "snappy"])
+@pytest.mark.parametrize("compression", [None, "gzip", "snappy"])
 def test_writing_parquet_with_partition_on_and_compression(tmpdir, compression, engine):
     fn = str(tmpdir)
 
@@ -2171,7 +2171,7 @@ def test_split_row_groups_int_aggregate_files(tmpdir, engine, split_row_groups):
             [("c", "!=", "a")],
             lambda x: x[x["c"] != "a"],
             13,
-            marks=pytest.mark.xfail_with_pyarrow_strings,
+            marks=[pytest.mark.xfail_with_pyarrow_strings],
         ),
         ([("c", "==", "a")], lambda x: x[x["c"] == "a"], 2),
     ],
@@ -2681,7 +2681,7 @@ PYARROW_LARGE_STRING_XFAIL = pytest.mark.xfail(
         ["part", "col"],
         pytest.param(
             ["part", "kind", "col"],
-            marks=PYARROW_LARGE_STRING_XFAIL,
+            marks=[PYARROW_LARGE_STRING_XFAIL],
         ),
     ],
 )
@@ -2720,7 +2720,7 @@ def test_partitioned_column_overlap(tmpdir, engine, write_cols):
         ["col"],
         pytest.param(
             ["part", "col"],
-            marks=PYARROW_LARGE_STRING_XFAIL,
+            marks=[PYARROW_LARGE_STRING_XFAIL],
         ),
     ],
 )
@@ -3327,10 +3327,10 @@ def test_roundtrip_decimal_dtype(tmpdir):
     else:
         assert ddf1["col1"].dtype == ddf2["col1"].dtype
 
-    # seems to be a Pyarrow bug
-    assert_eq(ddf1, ddf2, check_divisions=False, check_dtype=not PANDAS_GE_300)
+    # this used to differ due to a pyarrow bug, now fixed upstream
+    assert_eq(ddf1, ddf2, check_divisions=False)
     if PANDAS_GE_300:
-        assert ddf2["ts"].dtype != ddf1["ts"].dtype
+        assert ddf2["ts"].dtype == ddf1["ts"].dtype
 
 
 @PYARROW_MARK
@@ -3355,10 +3355,10 @@ def test_roundtrip_date_dtype(tmpdir):
         ddf1 = ddf1.astype({"col1": pd.ArrowDtype(pa.date32())})
     else:
         assert ddf1["col1"].dtype == ddf2["col1"].dtype
-    # seems to be a Pyarrow bug
-    assert_eq(ddf1, ddf2, check_divisions=False, check_dtype=not PANDAS_GE_300)
+    # this used to differ due to a pyarrow bug, now fixed upstream
+    assert_eq(ddf1, ddf2, check_divisions=False)
     if PANDAS_GE_300:
-        assert ddf2["ts"].dtype != ddf1["ts"].dtype
+        assert ddf2["ts"].dtype == ddf1["ts"].dtype
 
 
 def test_roundtrip_rename_columns(tmpdir, engine):

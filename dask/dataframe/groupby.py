@@ -1203,9 +1203,11 @@ def _unique_aggregate(series_gb, name=None):
 
 def _value_counts(x, **kwargs):
     with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore", "`groups` by one element list returns", FutureWarning
-        )
+        # pandas warns when accessing `.groups` on a groupby with a single-element
+        # list `by`; the warning class/message differs across pandas versions
+        # (FutureWarning historically, Pandas4Warning more recently), so suppress
+        # all warnings within this narrow, well-understood block.
+        warnings.filterwarnings("ignore")
         if not x.groups or all(
             pd.isna(key) for key in flatten(x.groups.keys(), container=tuple)
         ):

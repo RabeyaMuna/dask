@@ -24,8 +24,8 @@ dependencies:
   - moto<5
   # Optional dependencies
   - mimesis
-  - numpy>=2
-  - pandas
+  - numpy>=2,<2.4
+  - pandas<3
   - numba
   - numbagg  # only here to test others with numpy
   - flask

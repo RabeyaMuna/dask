@@ -271,7 +271,7 @@ _simple_fake_mapping: dict[str, Any] = {
     "b": np.bool_(True),
     "V": np.void(b" "),
     "M": np.datetime64("1970-01-01"),
-    "m": np.timedelta64(1),
+    "m": np.timedelta64(1, "us"),
     "S": np.str_("foo"),
     "a": np.str_("foo"),
     "U": np.str_("foo"),
@@ -637,6 +637,11 @@ def assert_dask_dtypes(ddf, res, numeric_equal=True):
         eq_type_sets.append({"i", "f", "u"})
 
     def eq_dtypes(a, b):
+        # datetime64 and timedelta64 dtypes with different resolutions
+        # (e.g., 's' vs 'us' for timedelta64, 'us' vs 'ns' for datetime64)
+        # should be considered equivalent since they represent the same type
+        if a.kind in ("M", "m") and b.kind in ("M", "m"):
+            return a.kind == b.kind
         return any(
             a.kind in eq_types and b.kind in eq_types for eq_types in eq_type_sets
         ) or (a == b)

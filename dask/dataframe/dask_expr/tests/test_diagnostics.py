@@ -8,6 +8,7 @@ pytest.importorskip("distributed")
 
 from distributed.utils_test import *  # noqa
 
+from dask.dataframe._compat import PYARROW_GE_1500
 from dask.dataframe.dask_expr import from_pandas
 from dask.dataframe.dask_expr.tests._util import _backend_library
 
@@ -28,6 +29,7 @@ def df(pdf):
 
 
 @pytest.mark.filterwarnings("ignore:DataFrameGroupBy.apply operated ")
+@pytest.mark.skipif(not PYARROW_GE_1500, reason="p2p shuffle requires pyarrow>=15.0.0")
 def test_analyze(df, client, tmpdir):
     pytest.importorskip("crick")
     filename = str(tmpdir / "analyze")

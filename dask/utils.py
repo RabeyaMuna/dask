@@ -2235,12 +2235,11 @@ def get_default_shuffle_method() -> str:
         return "disk"
 
     try:
-        from distributed.shuffle import check_minimal_arrow_version
+        from dask.dataframe._compat import HAS_PYARROW
 
-        check_minimal_arrow_version()
-    except ModuleNotFoundError:
+        return "p2p" if HAS_PYARROW else "tasks"
+    except ImportError:
         return "tasks"
-    return "p2p"
 
 
 def get_meta_library(like):
