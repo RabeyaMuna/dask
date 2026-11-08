@@ -1582,15 +1582,13 @@ def quantile(
         a = a.rechunk({ax: -1 if ax in axis else "auto" for ax in range(a.ndim)})
 
     if NUMPY_GE_200:
-        kwargs = {"weights": weights}
+        kwargs = {"weights": weights, "method": method}
     else:
-        kwargs = {}
+        kwargs = {"interpolation": interpolation}
 
     result = a.map_blocks(
         np.quantile,
         q=q,
-        method=method,
-        interpolation=interpolation,
         axis=axis,
         keepdims=keepdims,
         drop_axis=axis if not keepdims else None,
@@ -1643,7 +1641,6 @@ def _custom_quantile(
             q,
             axis=axis,
             method=method,
-            interpolation=interpolation,
             keepdims=keepdims,
             **kwargs,
         )
@@ -1714,6 +1711,9 @@ def nanquantile(
     This works by automatically chunking the reduced axes to a single chunk
     and then calling ``numpy.nanquantile`` function across the remaining dimensions
     """
+    if interpolation is not None:
+        method = interpolation
+
     if axis is None:
         if builtins.any(n_blocks > 1 for n_blocks in a.numblocks):
             raise NotImplementedError(
@@ -1744,14 +1744,16 @@ def nanquantile(
         kwargs = {"quantiles": q}
     else:
         func = _custom_quantile
+        # Always pass method to _custom_quantile so it can determine whether to bail out
         kwargs = {
             "q": q,
             "method": method,
-            "interpolation": interpolation,
             "keepdims": keepdims,
         }
         if NUMPY_GE_200:
             kwargs.update({"weights": weights})
+        else:
+            kwargs.update({"interpolation": interpolation})
 
     result = a.map_blocks(
         func,
