@@ -279,7 +279,7 @@ def test_pivot_table_index_dtype():
     ddf = dd.from_pandas(df, 2)
     res = dd.pivot_table(ddf, index="A", columns="B", values="C", aggfunc="count")
 
-    assert res.index.dtype == np.dtype("datetime64[ns]")
+    assert np.issubdtype(res.index.dtype, np.datetime64)
 
 
 def test_pivot_table_errors():

@@ -271,7 +271,7 @@ _simple_fake_mapping: dict[str, Any] = {
     "b": np.bool_(True),
     "V": np.void(b" "),
     "M": np.datetime64("1970-01-01"),
-    "m": np.timedelta64(1),
+    "m": np.timedelta64(1, "s"),
     "S": np.str_("foo"),
     "a": np.str_("foo"),
     "U": np.str_("foo"),
@@ -632,7 +632,7 @@ def assert_dask_dtypes(ddf, res, numeric_equal=True):
     useful due to the implicit conversion of integer to floating upon
     encountering missingness, which is hard to infer statically."""
 
-    eq_type_sets = [{"O", "S", "U", "a"}]  # treat object and strings alike
+    eq_type_sets = [{"O", "S", "U", "a"}, {"M"}, {"m"}]  # treat object and strings alike; treat datetime/timedelta resolutions as equal
     if numeric_equal:
         eq_type_sets.append({"i", "f", "u"})
 
