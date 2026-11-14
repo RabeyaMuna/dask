@@ -1392,7 +1392,7 @@ class ProhibitReuse(Expr):
     def __dask_graph__(self):
         try:
             from distributed.shuffle._core import P2PBarrierTask
-        except ModuleNotFoundError:
+        except ImportError:
             P2PBarrierTask = type(None)
         dsk = convert_legacy_graph(self.expr.__dask_graph__())
 

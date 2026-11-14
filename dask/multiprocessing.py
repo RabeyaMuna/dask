@@ -28,6 +28,25 @@ def _reduce_method_descriptor(m):
 
 # type(set.union) is used as a proxy to <class 'method_descriptor'>
 copyreg.pickle(type(set.union), _reduce_method_descriptor)
+# Register a reducer for CIMultiDictProxy to make it picklable.
+# This is needed because aiohttp's ClientResponseError contains a
+# CIMultiDictProxy in its headers attribute, and when this exception
+# is raised in a multiprocessing worker, it needs to be pickled to
+# be sent back to the parent process.
+try:
+    from multidict import CIMultiDict, CIMultiDictProxy
+
+    def _reduce_cimultidictproxy(proxy):
+        return _rebuild_cimultidictproxy, (dict(proxy),)
+
+    def _rebuild_cimultidictproxy(data):
+        return CIMultiDictProxy(CIMultiDict(data))
+
+    copyreg.pickle(CIMultiDictProxy, _reduce_cimultidictproxy)
+except ImportError:
+    pass
+
+
 
 _dumps = partial(cloudpickle.dumps, protocol=pickle.HIGHEST_PROTOCOL)
 _loads = cloudpickle.loads
