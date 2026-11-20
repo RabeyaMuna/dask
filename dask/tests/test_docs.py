@@ -17,9 +17,10 @@ def test_development_guidelines_matches_ci(filename):
     """When the environment.yaml changes in CI, make sure to change it in the docs as well"""
     root_dir = Path(__file__).parent.parent.parent
 
-    if not (root_dir / ".github" / "workflows").exists():
-        pytest.skip("Test can only be run on an editable install")
+    filepath = root_dir / filename
+    if not filepath.exists():
+        pytest.skip(f"Test can only be run on an editable install")
 
     latest_env = "environment-3.12.yaml"
-    with open(root_dir / filename, encoding="utf8") as f:
+    with open(filepath, encoding="utf8") as f:
         assert latest_env in f.read()
