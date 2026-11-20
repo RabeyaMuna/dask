@@ -1586,16 +1586,17 @@ def quantile(
     else:
         kwargs = {}
 
+    _interp_kwargs = {} if NUMPY_GE_200 else {'interpolation': interpolation}
     result = a.map_blocks(
         np.quantile,
         q=q,
         method=method,
-        interpolation=interpolation,
         axis=axis,
         keepdims=keepdims,
         drop_axis=axis if not keepdims else None,
         new_axis=0 if isinstance(q, Iterable) else None,
         chunks=_get_quantile_chunks(a, q, axis, keepdims),
+        **_interp_kwargs,
         **kwargs,
     )
 
@@ -1638,13 +1639,14 @@ def _custom_quantile(
     ):
         # bail to nanquantile. Assumptions are pretty strict for now but we
         # do cover the xarray.quantile case.
+        _interp_kwargs = {} if NUMPY_GE_200 else {'interpolation': interpolation}
         return np.nanquantile(
             a,
             q,
             axis=axis,
             method=method,
-            interpolation=interpolation,
             keepdims=keepdims,
+            **_interp_kwargs,
             **kwargs,
         )
     # nanquantile in NumPy is pretty slow if the quantile axis is slow because
