@@ -14,6 +14,7 @@ from operator import add
 from packaging.version import Version
 
 from distributed import Client, SchedulerPlugin, futures_of, wait
+from distributed.shuffle import check_minimal_arrow_version
 from distributed.utils_test import cleanup  # noqa F401
 from distributed.utils_test import client as c  # noqa F401
 from distributed.utils_test import (  # noqa F401
