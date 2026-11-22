@@ -6,7 +6,7 @@ def _dask_expr_enabled() -> bool:
 
     use_dask_expr = dask.config.get("dataframe.query-planning")
     if use_dask_expr is False:
-        raise NotImplementedError("The legacy implementation is no longer supported")
+        return False
 
     return True
 

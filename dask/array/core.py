@@ -486,6 +486,9 @@ def apply_infer_dtype(func, args, kwargs, funcname, suggest_dtype="dtype", nout=
     ]
     try:
         with np.errstate(all="ignore"):
+            # Handle case where interpolation kwarg is passed to nanquantile
+            if funcname == 'nanquantile' and 'interpolation' in kwargs:
+                kwargs['method'] = kwargs.pop('interpolation')
             o = func(*args, **kwargs)
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
