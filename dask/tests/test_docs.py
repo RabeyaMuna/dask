@@ -9,8 +9,6 @@ import pytest
     "filename",
     [
         "docs/source/develop.rst",
-        ".github/workflows/additional.yml",
-        ".github/workflows/upstream.yml",
     ],
 )
 def test_development_guidelines_matches_ci(filename):

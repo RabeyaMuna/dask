@@ -1699,7 +1699,7 @@ def test_writing_parquet_with_partition_on_and_compression(tmpdir, compression, 
                 },
             ],
             "index_columns": ["idx"],
-            "pandas_version": "0.21.0",
+            "pandas_version": "1.0.0",
         },
         # pyarrow 0.7.1
         {
@@ -1718,7 +1718,7 @@ def test_writing_parquet_with_partition_on_and_compression(tmpdir, compression, 
                 },
             ],
             "index_columns": ["idx"],
-            "pandas_version": "0.21.0",
+            "pandas_version": "1.0.0",
         },
         # pyarrow 0.8.0
         {
@@ -1748,7 +1748,7 @@ def test_writing_parquet_with_partition_on_and_compression(tmpdir, compression, 
                 },
             ],
             "index_columns": ["__index_level_0__"],
-            "pandas_version": "0.21.0",
+            "pandas_version": "1.0.0",
         },
     ]
 )
