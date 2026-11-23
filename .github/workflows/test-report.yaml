@@ -21,17 +21,15 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v7
         with:
           repository: dask/distributed
 
       - name: Setup Conda Environment
-        uses: conda-incubator/setup-miniconda@v3.0.1
+        uses: conda-incubator/setup-miniconda@v4.1.0
         with:
-          miniforge-variant: Mambaforge
           miniforge-version: latest
           condarc-file: continuous_integration/condarc
-          use-mamba: true
           # Note: this file is in the dask/distributed repo
           environment-file: continuous_integration/scripts/test-report-environment.yml
           activate-environment: dask
@@ -39,10 +37,10 @@ jobs:
       - name: Show conda options
         run: conda config --show
 
-      - name: mamba list
-        run: mamba list
+      - name: conda list
+        run: conda list
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v6
         id: cache
         with:
           # Suffix is depending on the backend / OS. Let's be agnostic here
@@ -61,7 +59,7 @@ jobs:
           mv test_report.html test_short_report.html deploy/
 
       - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.5.0
+        uses: JamesIves/github-pages-deploy-action@v4.9.0
         with:
           branch: gh-pages
           folder: deploy
