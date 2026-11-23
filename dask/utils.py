@@ -148,7 +148,7 @@ def _deprecated_kwarg(
     new_arg_name: str | None = None,
     mapping: Mapping[Any, Any] | Callable[[Any], Any] | None = None,
     stacklevel: int = 2,
-    comment: str | None = None
+    comment: str | None = None,
 ) -> Callable[[F], F]:
     """
     Decorator to deprecate a keyword argument of a function.
@@ -219,7 +219,7 @@ def _deprecated_kwarg(
             "mapping from old to new argument values must be dict or callable!"
         )
 
-    comment = f"\n{comment}" or ""
+    comment = f"\n{comment}" if comment is not None else ""
 
     def _deprecated_kwarg(func: F) -> F:
         @wraps(func)
@@ -232,7 +232,7 @@ def _deprecated_kwarg(
                         f"the {repr(old_arg_name)} keyword is deprecated and "
                         "will be removed in a future version. Please take "
                         f"steps to stop the use of {repr(old_arg_name)}"
-                    ) + comment
+                    ) + (comment if comment is not None else "")
                     warnings.warn(msg, FutureWarning, stacklevel=stacklevel)
                     kwargs[old_arg_name] = old_arg_value
                     return func(*args, **kwargs)
@@ -254,7 +254,11 @@ def _deprecated_kwarg(
                         f"use {repr(new_arg_name)} instead."
                     )
 
-                warnings.warn(msg + comment, FutureWarning, stacklevel=stacklevel)
+                warnings.warn(
+                    msg + (comment if comment is not None else ""),
+                    FutureWarning,
+                    stacklevel=stacklevel,
+                )
                 if kwargs.get(new_arg_name) is not None:
                     msg = (
                         f"Can only specify {repr(old_arg_name)} "
@@ -1832,15 +1836,13 @@ timedelta_sizes.update({k.upper(): v for k, v in timedelta_sizes.items()})
 
 
 @overload
-def parse_timedelta(s: None, default: str | Literal[False] = "seconds") -> None:
-    ...
+def parse_timedelta(s: None, default: str | Literal[False] = "seconds") -> None: ...
 
 
 @overload
 def parse_timedelta(
     s: str | float | timedelta, default: str | Literal[False] = "seconds"
-) -> float:
-    ...
+) -> float: ...
 
 
 def parse_timedelta(s, default="seconds"):
@@ -2293,7 +2295,7 @@ class shorten_traceback:
         if not paths:
             return exc_tb
 
-        exp = re.compile(".*(" + "|".join(paths) + ")")
+        exp = re.compile(".*(" + "|".join(paths if paths is not None else []) + ")")
         curr: types.TracebackType | None = exc_tb
         prev: types.TracebackType | None = None
 
